@@ -1,0 +1,9 @@
+logs/*
+npm-debug.log
+node_modules/
+db/
+sketches/
+.DS_Store
+.idea
+*.swp
+*.swo
