@@ -4,6 +4,7 @@
   "description": "signaling server",
   "main": "index.js",
   "dependencies": {
+    "dnode": "^1.2.0",
     "ecstatic": "^0.5.8",
     "level": "^0.18.0",
     "shoe": "^0.0.15",

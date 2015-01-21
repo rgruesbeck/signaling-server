@@ -1,0 +1,8 @@
+/* NOTES
+  -stream here is a duplex stream (both readble and writable).
+  -findout about stream in the node stream docs file:///home/ron/Docs/Node/all.html#all_stream
+  -ex. stream.pipe(stream) is an echo server.
+
+  -*(on close solved this) to make sure clients are connected, checkout heartbeat.
+  -for public offers db, can use symetric cypher and your friends just have a password to use your offer.
+*/
