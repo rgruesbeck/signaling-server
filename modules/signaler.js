@@ -1,8 +1,7 @@
 module.exports = function(peer, db){
   return {
-    query: function(opts, cb){
+    getPeers: function(cb){
       //list connected peers
-      console.log('querying for peers.');
       var peers = [];
       db.createReadStream()
         .on('data', function(data){
@@ -11,20 +10,21 @@ module.exports = function(peer, db){
           }
         })
         .on('end', function(){
+          console.log(peers.length + ' peers connected...');
           cb(peers);
         });
     },
     send: {
       ice_candidate: function(peerid, cb){
         //send icecandidate to peer
-        console.log('sending icecandidate.');
-        var res = 'sending icecandidate';
+        var res = peer.id + ' sending icecandidate to ' + peerid;
+        console.log(res);
         cb(res);
       },
       session_description: function(peerid, cb){
         //send session description to peer
-        console.log('sending session descrition.');
-        var res = 'sending session description';
+        var res = peer.id + ' sending session descrition to ' + peerid;
+        console.log(res);
         cb(res);
       }
     }

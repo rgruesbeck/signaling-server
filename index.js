@@ -1,7 +1,7 @@
 var http = require('http');
 var shoe = require('shoe');
 var through = require('through2');
-var dnode = require('dnode');
+var rpcStream = require('rpc-stream');
 var ecstatic = require('ecstatic')(__dirname + '/static');
 
 var level = require('level');
@@ -14,7 +14,7 @@ server.listen(9999, function(){
 
 var sock = shoe(function(stream) {
 
-  //initialize peer
+  //create new peer
   var peer = {
     id: 'peer!' + Math.random().toString(16).slice(2),
     socket: stream,
@@ -22,7 +22,7 @@ var sock = shoe(function(stream) {
     icecandidate: null
   };
 
-  //add peer to when client connects.
+  //add peer to list when client connects.
   db.put(peer.id, peer, function(err){
     if (err) return console.log(err);
     console.log(peer.id + ' connected.');
@@ -38,10 +38,11 @@ var sock = shoe(function(stream) {
 
   //load rpc signaling functions
   var signaler = require('./modules/signaler')(peer, db);
-  var d = dnode(signaler);
+  var rpc = rpcStream(signaler);
 
-  //pipe through dnode rpc stream.
-  d.pipe(stream).pipe(d);
+  //pipe through rpc stream
+  rpc.pipe(stream).pipe(rpc);
+
 });
 
 sock.install(server, '/peers');
