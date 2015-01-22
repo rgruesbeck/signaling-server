@@ -14,19 +14,17 @@ module.exports = function(peer, db){
           cb(peers);
         });
     },
-    send: {
-      ice_candidate: function(peerid, cb){
-        //send icecandidate to peer
-        var res = peer.id + ' sending icecandidate to ' + peerid;
-        console.log(res);
-        cb(res);
-      },
-      session_description: function(peerid, cb){
-        //send session description to peer
-        var res = peer.id + ' sending session descrition to ' + peerid;
-        console.log(res);
-        cb(res);
-      }
+    sendICE: function(peerid, cb){
+      //send icecandidate to peer
+      var res = peer.id + ' sending icecandidate to ' + peerid;
+      console.log(res);
+      cb(res);
+    },
+    sendSDP: function(peerid, cb){
+      //send session description to peer
+      var res = peer.id + ' sending session descrition to ' + peerid;
+      console.log(res);
+      cb(res);
     }
   };
 };
