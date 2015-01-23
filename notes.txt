@@ -6,3 +6,6 @@
   -*(on close solved this) to make sure clients are connected, checkout heartbeat.
   -for public offers db, can use symetric cypher and your friends just have a password to use your offer.
 */
+
+TODO:
+-refactor out the getPeers method and instead push the list of peers to all peers on connect

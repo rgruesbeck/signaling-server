@@ -12,26 +12,32 @@ server.listen(9999, function(){
   console.log('signal server listening at port: 9999');
 });
 
-var sock = shoe(function(stream) {
+var sock = shoe(function(stream) {});
 
-  //create new peer
-  var peer = {
-    id: 'peer!' + Math.random().toString(16).slice(2),
-    socket: stream,
-    offer: null,
-    icecandidate: null
-  };
+function newClient(stream){
+  var peer = newPeer(stream.id);
+  if (!sock.peersockets) {
+    sock.peersockets = [];
+  }
 
-  //add peer to list when client connects.
-  db.put(peer.id, peer, function(err){
+  db.put(peer.id, JSON.stringify(peer), function(err){
     if (err) return console.log(err);
-    console.log(peer.id + ' connected.');
+    console.log(peer.id + ' connected');
+    sock.peersockets.push(stream);
+    console.log(sock.peersockets.length);
   });
 
-  //remove peer when client closes connection.
   stream.on('close', function(){
     db.del(peer.id, function(err){
       if (err) return console.log(err);
+      var tmp = null;
+      for (i=0; i<sock.peersockets.length; ++i) {
+        if (sock.peersockets[i] === peer.socketId) {
+          tmp = i;
+          break;
+        }
+      }
+      sock.peersockets.splice(tmp, 1);
       console.log(peer.id + ' disconected.');
     });
   });
@@ -42,7 +48,14 @@ var sock = shoe(function(stream) {
 
   //pipe through rpc stream
   rpc.pipe(stream).pipe(rpc);
+}
 
-});
+function newPeer(sid){
+  return {
+    id: 'peer!' + Math.random().toString(16).slice(2),
+    socketId: sid
+  };
+}
 
+sock.on('connection', newClient);
 sock.install(server, '/peers');
