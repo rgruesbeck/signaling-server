@@ -6,6 +6,7 @@
   "dependencies": {
     "ecstatic": "^0.5.8",
     "level": "^0.18.0",
+    "mux-demux": "^3.7.9",
     "rpc-stream": "^2.1.1",
     "shoe": "^0.0.15",
     "through2": "^0.6.3"
