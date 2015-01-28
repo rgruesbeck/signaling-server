@@ -3,6 +3,7 @@ var shoe = require('shoe');
 var through = require('through2');
 var MuxDemux = require('mux-demux');
 var rpcStream = require('rpc-stream');
+var signaler = require('./modules/signaler');
 var ecstatic = require('ecstatic')(__dirname + '/static');
 
 var level = require('level');
@@ -13,16 +14,11 @@ server.listen(9999, function(){
   console.log('signal server listening at port: 9999');
 });
 
+var socks = [];
+
 var sock = shoe(function(stream) {
   stream.pipe(multiStream()).pipe(stream);
 });
-
-function newPeer(sid){
-  return {
-    id: 'peer!' + Math.random().toString(16).slice(2),
-    socketId: sid
-  };
-}
 
 function multiStream(){
   var peer;
@@ -34,43 +30,42 @@ function multiStream(){
   });
 
   mdm.once('connection', function(stream){
-    peer = newPeer(stream.id);
-    if (!sock.peersockets) {
-      sock.peersockets = [];
-    }
-
-    db.put(peer.id, JSON.stringify(peer), function(err){
-      if (err) return console.log(err);
-      sock.peersockets.push(stream);
-      console.log(peer.id + ' connected.');
-    });
+    var self = this;
+    self.peerid = 'peer!' + Math.random().toString(16).slice(2);
+    socks.push(self);
+    console.log(self.peerid + ' connected.');
 
     stream.on('close', function(){
-      db.del(peer.id, function(err){
-        if (err) return console.log(err);
-        var tmp = null;
-        for (i=0; i<sock.peersockets.length; ++i) {
-          if (sock.peersockets[i] === peer.socketId) {
-            tmp = i;
-            break;
-          }
+      var tmp = null;
+      for (i = 0; i < socks.length; ++i) {
+        if (socks[i].peerid === self.peerid) {
+          tmp = i;
+          break;
         }
-        sock.peersockets.splice(tmp, 1);
-        console.log(peer.id + ' disconected.');
-      });
+      }
+      socks.splice(tmp, 1);
+      console.log(self.peerid + ' disconected.');
     });
 
   });
 
   function connectHandler(stream){
-
+    var self = this;
     if (stream.meta === 'rpc') {
-      console.log('stream is rpc');
-      //var signaler = require('./modules/signaler')(peer, db);
-      //var rpc = rpcStream(signaler);
-      //rpc.pipe(stream).pipe(rpc);
-    } else {
-      console.log('stream is notice');
+      var rpc = rpcStream(signaler(peer, db));
+      rpc.pipe(stream).pipe(rpc);
+    }
+    if (stream.meta === 'notice'){
+      console.log(socks.map(function(s){
+        return s.peerid;
+      }));
+      socks.forEach(function(p){
+        if (p.peerid == self.peerid) {
+          console.log('found self: ' + p.peerid);
+        } else {
+          console.log('other stream: ' + p.peerid);
+        }
+      });
     }
   }
 
