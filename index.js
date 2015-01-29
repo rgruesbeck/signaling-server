@@ -3,7 +3,6 @@ var shoe = require('shoe');
 var through = require('through2');
 var MuxDemux = require('mux-demux');
 var rpcStream = require('rpc-stream');
-var signaler = require('./modules/signaler');
 var ecstatic = require('ecstatic')(__dirname + '/static');
 
 var server = http.createServer(ecstatic);
@@ -26,6 +25,13 @@ function multiStream(){
     mdm.destroy();
   });
 
+  mdm.broadcast = function(msg){
+    for (var key in socks) {
+      socks[key].createWriteStream('msg').write(msg);
+    }
+    console.log('broadcasting ' + msg);
+  };
+
   return mdm;
 }
 
@@ -34,27 +40,53 @@ function connectNew(stream){
   var id = 'peer!' + Math.random().toString(16).slice(2);
   self.peerId = id;
   socks[id] = self;
-  console.log(self.peerId + ' connected.');
+
+  var addMsg = {
+    add: id,
+    peers: Object.keys(socks)
+  };
+
+
+  self.broadcast(JSON.stringify(addMsg));
 
   stream.on('close', function(){
-    delete socks[self.peerId];
-    console.log(self.peerId + ' disconected.');
+    delete socks[id];
+    var removeMsg = {
+      remove: id,
+      peers: Object.keys(socks)
+    };
+    self.broadcast(JSON.stringify(removeMsg));
   });
 }
 
 function connectHandler(stream){
   var self = this;
   if (stream.meta === 'rpc') {
-    var rpc = rpcStream(signaler(self, socks));
+    var rpc = rpcStream(signaler(self));
     rpc.pipe(stream).pipe(rpc);
   }
-  if (stream.meta === 'notice'){
-    for (var key in socks) {
-      if (key != self.peerId) {
-        stream.pipe(socks[key]);
-      }
-    }
+  if (stream.meta === 'msg'){
+    console.log('msg');
   }
+}
+
+function signaler(sender){
+  return {
+    //send icecandidate to peer and return answer when accepted.
+    sendICE: function(opts){
+      if (!opts.to && !opts.ice) return console.log('error sending offer');
+      //opts.from = sender;
+      opts.from = sender.peerId;
+      console.log(JSON.stringify(opts));
+    },
+    //send session description to peer and return answer when accepted.
+    sendSDP: function(opts){
+      if (!opts.to && !opts.sdp) return console.log('error sending offer');
+      //opts.from = sender;
+      opts.from = sender.peerId;
+      console.log(JSON.stringify(opts));
+    }
+  };
 }
 
 sock.install(server, '/peers');

@@ -1,13 +1,6 @@
-/* NOTES
-  -stream here is a duplex stream (both readble and writable).
-  -findout about stream in the node stream docs file:///home/ron/Docs/Node/all.html#all_stream
-  -ex. stream.pipe(stream) is an echo server.
+TODO:
+-implement signaling
 
-  -*(on close solved this) to make sure clients are connected, checkout heartbeat.
+/* NOTES
   -for public offers db, can use symetric cypher and your friends just have a password to use your offer.
 */
-
-TODO:
--refactor out the getPeers method and instead push the list of peers to all peers on connect
-
-//notes
