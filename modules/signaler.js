@@ -1,30 +1,16 @@
-module.exports = function(peer, db){
+module.exports = function(self, socks){
   return {
-    getPeers: function(cb){
-      //list connected peers
-      var peers = [];
-      db.createReadStream()
-        .on('data', function(data){
-          if (data) {
-            peers.push(data.key);
-          }
-        })
-        .on('end', function(){
-          console.log(peers.length + ' peers connected...');
-          cb(peers);
-        });
+    //send icecandidate to peer
+    sendICE: function(opts){
+      if (!opts.to && !opts.ice) return console.log('error sending offer');
+      opts.from = self;
+      console.log('%d sending ice to %d and return answer when accepted.', self.peerid, opts.to);
     },
-    sendICE: function(peerid, cb){
-      //send icecandidate to peer
-      var res = peer.id + ' sending icecandidate to ' + peerid;
-      console.log(res);
-      cb(res);
-    },
-    sendSDP: function(peerid, cb){
-      //send session description to peer
-      var res = peer.id + ' sending session descrition to ' + peerid;
-      console.log(res);
-      cb(res);
+    //send session description to peer
+    sendSDP: function(opts){
+      if (!opts.to && !opts.sdp) return console.log('error sending offer');
+      opts.from = self;
+      console.log('%d sending sdp to %d and return answer when accepted.', self.peerid, opts.to);
     }
   };
 };

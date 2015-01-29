@@ -9,3 +9,5 @@
 
 TODO:
 -refactor out the getPeers method and instead push the list of peers to all peers on connect
+
+//notes
